@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import math.Randoms;
 import math.Stats;
-import yifan.utils.Strings;
 
 /**
  * Data Structure: dense vector
@@ -182,7 +181,8 @@ public class DenseVector implements Serializable {
 	}
 
 	/**
-	 * @return a dense vector by substructing a value from all entries of current vector
+	 * @return a dense vector by substructing a value from all entries of
+	 *         current vector
 	 */
 	public DenseVector minus(double val) {
 
@@ -195,7 +195,8 @@ public class DenseVector implements Serializable {
 	}
 
 	/**
-	 * @return a dense vector by scaling a value to all entries of current vector
+	 * @return a dense vector by scaling a value to all entries of current
+	 *         vector
 	 */
 	public DenseVector scale(double val) {
 
@@ -285,7 +286,7 @@ public class DenseVector implements Serializable {
 	 */
 	public static DenseVector kroneckerProduct(DenseVector M, DenseVector N) {
 		DenseVector res = new DenseVector(M.size * N.size);
-		
+
 		int i = 0;
 		for (int m = 0; m < M.size; m++) {
 			double mVal = M.get(m);
@@ -299,7 +300,10 @@ public class DenseVector implements Serializable {
 
 	@Override
 	public String toString() {
-		return Strings.toString(data);
+		String line = "";
+		for (int i = 0; i < size; i++)
+			line += data[i] + " ";
+		return line.substring(0, line.length()-1);
 	}
 
 }

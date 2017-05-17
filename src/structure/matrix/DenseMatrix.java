@@ -18,10 +18,16 @@
 
 package structure.matrix;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import math.Randoms;
+import yifan.utils.FileIO;
+import yifan.utils.Logs;
 import yifan.utils.Strings;
 
 /**
@@ -112,6 +118,41 @@ public class DenseMatrix implements Serializable {
 			mat.set(i, i, 1.0);
 
 		return mat;
+	}
+	
+	public static DenseMatrix readMatrix(String filename) throws IOException {
+		BufferedReader reader = FileIO.getReader(filename);
+		String line = reader.readLine();
+		String[] terms = line.split(" ");
+		int m = Integer.parseInt(terms[0]);
+		int n = Integer.parseInt(terms[1]);
+		double[][] entry = new double[m][];
+		for (int i = 0; i < m; i++) {
+			entry[i] = new double[n];
+			line = reader.readLine();
+			terms = line.split(" ");
+			for (int j = 0; j < n; j++)
+				entry[i][j] = Double.parseDouble(terms[j]);
+		}
+		reader.close();
+		DenseMatrix mat = new DenseMatrix(entry, m, n);
+		return mat;
+	}
+	
+	public static void writeMatrix(DenseMatrix dm,String filename) throws Exception{
+		FileIO.deleteFile(filename);
+		FileIO.writeString(filename,dm.numRows+" "+dm.numColumns,true);
+		List<String> lines = new ArrayList<>(1500);
+		for(int i=0;i<dm.numRows;i++){
+			lines.add(dm.row(i).toString());
+			if (lines.size() >= 1000){
+				FileIO.writeList(filename, lines,true);
+				lines.clear();
+			}
+		}
+		if (lines.size() > 0)
+			FileIO.writeList(filename, lines, true);
+		Logs.debug("Matrix data is written to: {}", filename);
 	}
 
 	/**
@@ -920,7 +961,7 @@ public class DenseMatrix implements Serializable {
 	}
 
 	/**
-	 * @return Moore¨CPenrose pseudoinverse based on singular value decomposition (SVD)
+	 * @return Mooreï¿½CPenrose pseudoinverse based on singular value decomposition (SVD)
 	 */
 	public DenseMatrix pinv() {
 
