@@ -30,6 +30,7 @@ import java.util.Set;
 
 import math.Stats;
 import yifan.utils.FileIO;
+import yifan.utils.IOUtils;
 import yifan.utils.Logs;
 
 import com.google.common.cache.CacheBuilder;
@@ -159,8 +160,8 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 	public SparseMatrix transpose() {
 		SparseMatrix tr = new SparseMatrix(numColumns, numRows);
 
-		tr.copyCRS(this.rowData, this.rowPtr, this.colInd);
-		tr.copyCCS(this.colData, this.colPtr, this.rowInd);
+		tr.copyCCS(this.rowData, this.rowPtr, this.colInd);
+		tr.copyCRS(this.colData, this.colPtr, this.rowInd);
 
 		return tr;
 	}
@@ -186,8 +187,10 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		int size = 0;
 
 		for (MatrixEntry me : this)
-			if (me.get() != 0)
+			if (me.get() != 0) {
 				size++;
+				// IOUtils.console(size);
+			}
 
 		return size;
 	}
@@ -937,6 +940,45 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 
 	}
 
+	public SparseMatrix selectRow(int[] row) {
+		// int[] row_ptr = getRowPointers();
+		// int[] col_idx = getColumnIndices();
+		// double[] data = getData();
+		Table<Integer, Integer, Double> dataTable = HashBasedTable.create();
+		Multimap<Integer, Integer> colMap = HashMultimap.create();
+		int s = 0;
+		for (int r : row) {
+			int start = rowPtr[r], end = rowPtr[r + 1];
+			int len = end - start;
+			for (int c = 0; c < len; c++) {
+				int j = start + c;
+				dataTable.put(s, colInd[j], rowData[j]);
+				colMap.put(colInd[j], s);
+			}
+			s++;
+		}
+		SparseMatrix sub = new SparseMatrix(s, numColumns, dataTable, colMap);
+		return sub;
+	}
+
+	public SparseMatrix selectColumn(int[] column) {
+		Table<Integer, Integer, Double> dataTable = HashBasedTable.create();
+		Multimap<Integer, Integer> colMap = HashMultimap.create();
+		int s = 0;
+		for (int c : column) {
+			int start = colPtr[c], end = colPtr[c + 1];
+			int len = end - start;
+			for (int r = 0; r < len; r++) {
+				int j = start + r;
+				dataTable.put(rowInd[j], s, colData[j]);
+				colMap.put(s, rowInd[j]);
+			}
+			s++;
+		}
+		SparseMatrix sub = new SparseMatrix(numRows, s, dataTable, colMap);
+		return sub;
+	}
+
 	public static SparseMatrix readMatrix(String filePath) throws IOException {
 		// Table {row-id, col-id, rate}
 		Table<Integer, Integer, Double> dataTable = HashBasedTable.create();
@@ -963,19 +1005,13 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		dataTable = null;
 		return mat;
 	}
-	
-	public static void writeMatrix(SparseMatrix sm, String filePath)
-			throws Exception {
-		FileIO.deleteFile(filePath);
-		FileIO.writeString(filePath,
-				"%%MatrixMarket matrix coordinate real general");
 
-		FileIO.writeString(
-				filePath,
-				String.format("%d %d %d", sm.numRows(), sm.numColumns(),
-						sm.size()), true);
+	public void writeMatrix(String filePath) throws Exception {
+		FileIO.deleteFile(filePath);
+		FileIO.writeString(filePath, "%%MatrixMarket matrix coordinate real general");
+		FileIO.writeString(filePath, String.format("%d %d %d", numRows(), numColumns(), size()), true);
 		List<String> lines = new ArrayList<>(1500);
-		for (MatrixEntry me : sm) {
+		for (MatrixEntry me : this) {
 			int u = me.row() + 1;
 			int j = me.column() + 1;
 			double ruj = me.get();
@@ -992,7 +1028,4 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		Logs.debug("Matrix data is written to: {}", filePath);
 	}
 
-	
-	
-	
 }
