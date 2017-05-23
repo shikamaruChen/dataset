@@ -26,11 +26,12 @@ public class Split {
 		}
 	}
 
-	public Split(String dir) throws IOException {
-		this.dir = dir;
-		mat = SparseMatrix.readMatrix(dir + "/rating");
+	public Split(String path) throws IOException {
+		File file = new File(path);
+		dir = file.getParent();
+		mat = SparseMatrix.readMatrix(path);
 	}
-
+	
 	private SparseMatrix[] leaveOneOut() throws Exception {
 		int[] row_ptr = mat.getRowPointers();
 		int[] col_idx = mat.getColumnIndices();
