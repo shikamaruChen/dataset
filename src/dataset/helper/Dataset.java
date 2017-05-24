@@ -127,11 +127,15 @@ public class Dataset {
 			fold[i] = 1;
 		for (int i = len; i < 10; i++)
 			fold[i] = 2;
-		int[] assign = new int[rating.size()];
+		List<Integer> assign = Lists.newArrayList();
+		// int[] assign = new int[rating.size()];
 		int i = 0;
 		for (MatrixEntry entry : rating)
-			assign[i] = fold[i++ % 10];
-		SparseMatrix[] ms = splitFold(3, assign);
+			assign.add(fold[i++ % 10]);
+		Collections.shuffle(assign);
+		Integer[] assignArray = new Integer[assign.size()];
+		assign.toArray(assignArray);
+		SparseMatrix[] ms = splitFold(3, ArrayUtils.toPrimitive(assignArray));
 		return ms;
 	}
 
