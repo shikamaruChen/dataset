@@ -27,8 +27,8 @@ public class Dataset {
 
 	public static void main(String[] args) {
 		try {
-			Dataset dataset = new Dataset("/Users/User/Desktop/yifan/dataset/nips");
-			dataset.splitTTV(3, 6, 2);
+			Dataset dataset = new Dataset("/home/yifan/dataset/nips");
+			dataset.split(1, 6, 2, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,6 +87,30 @@ public class Dataset {
 		return trainMatrix;
 	}
 
+	private SparseMatrix[] disjointSplit(int train, int test) {
+		if (train + test > 10)
+			return null;
+		int[] fold = new int[10];
+		for (int i = 0; i < train; i++)
+			fold[i] = 0;
+		int len = train + test;
+		for (int i = train; i < len; i++)
+			fold[i] = 1;
+		for (int i = len; i < 10; i++)
+			fold[i] = 2;
+		List<Integer> assign = Lists.newArrayList();
+		for (int c = 0; c < rating.numColumns; c++)
+			assign.add(fold[c % 10]);
+		console(assign.size());
+		console(rating.numColumns);
+		Collections.shuffle(assign);
+		Integer[] column = new Integer[rating.numColumns];
+		assign.toArray(column);
+//		console(Arrays.toString(column));
+		SparseMatrix[] ms = rating.splitColumn(3, ArrayUtils.toPrimitive(column));
+		return ms;
+	}
+
 	public void selectFeature(String selectfile) throws Exception {
 		String line = FileIO.readAsString(selectfile);
 		String[] terms = line.split(" ");
@@ -104,19 +128,23 @@ public class Dataset {
 		sub.writeMatrix(dir + "/subfeature");
 	}
 
-	public void splitTTV(int nfold, int train, int test) throws Exception {
+	public void split(int nfold, int train, int test, boolean disjoint) throws Exception {
 		File splitDir = new File(dir + "/split");
-		if (!splitDir.isDirectory())
-			splitDir.mkdir();
+		if(splitDir.exists()){
+			File[] files = splitDir.listFiles();
+			for(File file:files) file.delete();
+			splitDir.delete();
+		}
+		splitDir.mkdir();
 		for (int f = 1; f <= nfold; f++) {
-			SparseMatrix[] ms = splitTTV(train, test);
+			SparseMatrix[] ms = disjoint ? disjointSplit(train, test) : split(train, test);
 			ms[0].writeMatrix(dir + "/split/train" + f);
 			ms[1].writeMatrix(dir + "/split/test" + f);
 			ms[2].writeMatrix(dir + "/split/valid" + f);
 		}
 	}
 
-	private SparseMatrix[] splitTTV(int train, int test) throws Exception {
+	private SparseMatrix[] split(int train, int test) throws Exception {
 		if (train + test > 10)
 			return null;
 		int[] fold = new int[10];

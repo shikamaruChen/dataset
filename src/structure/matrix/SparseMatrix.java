@@ -961,6 +961,25 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		return sub;
 	}
 
+	public SparseMatrix[] splitColumn(int fold, int[] column) {
+		SparseMatrix[] ms = new SparseMatrix[fold];
+		for (int i = 0; i < fold; i++)
+			ms[i] = new SparseMatrix(this);
+		for (int c = 0; c < column.length; c++) {
+			int start = colPtr[c], end = colPtr[c + 1];
+			int len = end - start;
+			for (int k = 0; k < fold; k++)
+				if (column[c] != k)
+					for (int r = 0; r < len; r++) {
+						ms[k].set(rowInd[start + r], c, 0.0);
+//						IOUtils.console(String.format("(%d,%d,%d)", rowInd[start + r], c, column[c]));
+					}
+		}
+		for (int i = 0; i < fold; i++)
+			SparseMatrix.reshape(ms[i]);
+		return ms;
+	}
+
 	public SparseMatrix selectColumn(int[] column) {
 		Table<Integer, Integer, Double> dataTable = HashBasedTable.create();
 		Multimap<Integer, Integer> colMap = HashMultimap.create();
