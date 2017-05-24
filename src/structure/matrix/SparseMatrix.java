@@ -96,7 +96,7 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 	 * method
 	 * 
 	 */
-	private SparseMatrix(int rows, int cols) {
+	public SparseMatrix(int rows, int cols) {
 		numRows = rows;
 		numColumns = cols;
 	}

@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import com.google.common.collect.HashBasedTable;
@@ -26,8 +27,8 @@ public class Dataset {
 
 	public static void main(String[] args) {
 		try {
-			Dataset dataset = new Dataset("/home/yifan/dataset/nips/select");
-			dataset.selectFeature("/home/yifan/dataset/nips/select/select");
+			Dataset dataset = new Dataset("/Users/User/Desktop/yifan/dataset/nips");
+			dataset.splitTTV(3, 6, 2);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,7 +76,7 @@ public class Dataset {
 		}
 	}
 
-	public SparseMatrix getTrainFile(SparseMatrix test) {
+	private SparseMatrix getTrainFile(SparseMatrix test) {
 		SparseMatrix trainMatrix = new SparseMatrix(rating);
 		for (MatrixEntry entry : test) {
 			int u = entry.row();
@@ -95,12 +96,65 @@ public class Dataset {
 			if (v > 0)
 				list.add(i);
 		}
-//		console(list);
+		// console(list);
 		Integer[] select = new Integer[list.size()];
 		list.toArray(select);
 
 		SparseMatrix sub = feature.selectColumn(ArrayUtils.toPrimitive(select));
 		sub.writeMatrix(dir + "/subfeature");
+	}
+
+	public void splitTTV(int nfold, int train, int test) throws Exception {
+		File splitDir = new File(dir + "/split");
+		if (!splitDir.isDirectory())
+			splitDir.mkdir();
+		for (int f = 1; f <= nfold; f++) {
+			SparseMatrix[] ms = splitTTV(train, test);
+			ms[0].writeMatrix(dir + "/split/train" + f);
+			ms[1].writeMatrix(dir + "/split/test" + f);
+			ms[2].writeMatrix(dir + "/split/valid" + f);
+		}
+	}
+
+	private SparseMatrix[] splitTTV(int train, int test) throws Exception {
+		if (train + test > 10)
+			return null;
+		int[] fold = new int[10];
+		for (int i = 0; i < train; i++)
+			fold[i] = 0;
+		int len = train + test;
+		for (int i = train; i < len; i++)
+			fold[i] = 1;
+		for (int i = len; i < 10; i++)
+			fold[i] = 2;
+		int[] assign = new int[rating.size()];
+		int i = 0;
+		for (MatrixEntry entry : rating)
+			assign[i] = fold[i++ % 10];
+		SparseMatrix[] ms = splitFold(3, assign);
+		return ms;
+	}
+
+	private SparseMatrix[] splitFold(int nfold, int[] assign) {
+		int i = 0;
+		int[] row_ptr = rating.getRowPointers();
+		int[] col_idx = rating.getColumnIndices();
+		SparseMatrix[] ms = new SparseMatrix[nfold];
+		for (int k = 0; k < nfold; k++)
+			ms[k] = new SparseMatrix(rating);
+		for (int r = 0, um = rating.numRows(); r < um; r++) {
+			int start = row_ptr[r], end = row_ptr[r + 1];
+			int len = end - start;
+			for (int c = 0; c < len; c++) {
+				int fold = assign[i++];
+				for (int k = 0; k < nfold; k++)
+					if (fold != k)
+						ms[k].set(r, col_idx[c + start], 0.0);
+			}
+		}
+		for (int k = 0; k < nfold; k++)
+			SparseMatrix.reshape(ms[k]);
+		return ms;
 	}
 
 }
