@@ -27,8 +27,9 @@ public class Dataset {
 
 	public static void main(String[] args) {
 		try {
-			Dataset dataset = new Dataset("/home/yifan/dataset/nips");
-			dataset.split(1, 6, 2, true);
+			Dataset dataset = new Dataset("/home/yifan/dataset/kean");
+			dataset.selectFeature("/home/yifan/dataset/kean/model_kean_fsm");
+//			dataset.split(3, 8, 1, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -101,8 +102,8 @@ public class Dataset {
 		List<Integer> assign = Lists.newArrayList();
 		for (int c = 0; c < rating.numColumns; c++)
 			assign.add(fold[c % 10]);
-		console(assign.size());
-		console(rating.numColumns);
+//		console(assign.size());
+//		console(rating.numColumns);
 		Collections.shuffle(assign);
 		Integer[] column = new Integer[rating.numColumns];
 		assign.toArray(column);
