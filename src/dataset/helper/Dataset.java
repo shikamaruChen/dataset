@@ -27,9 +27,9 @@ public class Dataset {
 
 	public static void main(String[] args) {
 		try {
-			Dataset dataset = new Dataset("/home/yifan/dataset/kean");
-			dataset.selectFeature("/home/yifan/dataset/kean/model_kean_fsm");
-//			dataset.split(3, 8, 1, true);
+			Dataset dataset = new Dataset("/home/yifan/dataset/beauty");
+			// dataset.disjointSplit(8, 1);
+			dataset.split(3, 8, 1, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -40,6 +40,21 @@ public class Dataset {
 		this.dir = dir;
 		rating = SparseMatrix.readMatrix(dir + "/rating");
 		feature = SparseMatrix.readMatrix(dir + "/feature");
+	}
+
+	public void filterUser(int threshold) throws Exception {
+		List<Integer> list = Lists.newArrayList();
+		int[] row = rating.getRowPointers();
+		int m = rating.numRows;
+		for (int i = 0; i < m; i++) {
+			int nnz = row[i + 1] - row[i];
+			if (nnz >= threshold)
+				list.add(i);
+		}
+		Integer[] select = new Integer[list.size()];
+		list.toArray(select);
+		SparseMatrix sub = rating.selectRow(ArrayUtils.toPrimitive(select));
+		sub.writeMatrix(dir + "/subrating");
 	}
 
 	private SparseMatrix[] leaveOneOut() throws Exception {
@@ -102,12 +117,12 @@ public class Dataset {
 		List<Integer> assign = Lists.newArrayList();
 		for (int c = 0; c < rating.numColumns; c++)
 			assign.add(fold[c % 10]);
-//		console(assign.size());
-//		console(rating.numColumns);
+		// console(assign.size());
+		// console(rating.numColumns);
 		Collections.shuffle(assign);
 		Integer[] column = new Integer[rating.numColumns];
 		assign.toArray(column);
-//		console(Arrays.toString(column));
+		// console(Arrays.toString(column));
 		SparseMatrix[] ms = rating.splitColumn(3, ArrayUtils.toPrimitive(column));
 		return ms;
 	}
@@ -129,11 +144,20 @@ public class Dataset {
 		sub.writeMatrix(dir + "/subfeature");
 	}
 
+	/**
+	 * train+test+valid = 10
+	 * @param nfold number of folders
+	 * @param train percent of train file
+	 * @param test percent of test file
+	 * @param disjoint whether it is disjointly split
+	 * @throws Exception
+	 */
 	public void split(int nfold, int train, int test, boolean disjoint) throws Exception {
 		File splitDir = new File(dir + "/split");
-		if(splitDir.exists()){
+		if (splitDir.exists()) {
 			File[] files = splitDir.listFiles();
-			for(File file:files) file.delete();
+			for (File file : files)
+				file.delete();
 			splitDir.delete();
 		}
 		splitDir.mkdir();

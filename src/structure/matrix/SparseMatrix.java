@@ -38,9 +38,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
+
+import edu.stanford.nlp.util.ArrayUtils;
 
 /**
  * Data Structure: Sparse Matrix whose implementation is modified from M4J
@@ -940,6 +943,32 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 
 	}
 
+	public int[] selectRow(int threshold) {
+		List<Integer> list = Lists.newArrayList();
+		for (int i = 0; i < numRows; i++) {
+			int nnz = rowPtr[i + 1] - rowPtr[i];
+			if (nnz >= threshold)
+				list.add(i);
+		}
+		Integer[] select = new Integer[list.size()];
+		list.toArray(select);
+		return ArrayUtils.toPrimitive(select);
+	}
+
+
+	public int[] selectColumn(int threshold) {
+		List<Integer> list = Lists.newArrayList();
+		for (int i = 0; i < numColumns; i++) {
+			int nnz = colPtr[i + 1] - colPtr[i];
+			if (nnz >= threshold)
+				list.add(i);
+		}
+		Integer[] select = new Integer[list.size()];
+		list.toArray(select);
+		return ArrayUtils.toPrimitive(select);
+	}
+
+
 	public SparseMatrix selectRow(int[] row) {
 		// int[] row_ptr = getRowPointers();
 		// int[] col_idx = getColumnIndices();
@@ -972,7 +1001,8 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 				if (column[c] != k)
 					for (int r = 0; r < len; r++) {
 						ms[k].set(rowInd[start + r], c, 0.0);
-//						IOUtils.console(String.format("(%d,%d,%d)", rowInd[start + r], c, column[c]));
+						// IOUtils.console(String.format("(%d,%d,%d)",
+						// rowInd[start + r], c, column[c]));
 					}
 		}
 		for (int i = 0; i < fold; i++)
