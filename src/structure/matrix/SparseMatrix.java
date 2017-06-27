@@ -19,18 +19,19 @@
 package structure.matrix;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import math.Stats;
 import yifan.utils.FileIO;
-import yifan.utils.IOUtils;
 import yifan.utils.Logs;
 
 import com.google.common.cache.CacheBuilder;
@@ -44,6 +45,7 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 
 import edu.stanford.nlp.util.ArrayUtils;
+import static yifan.utils.IOUtils.*;
 
 /**
  * Data Structure: Sparse Matrix whose implementation is modified from M4J
@@ -955,7 +957,6 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		return ArrayUtils.toPrimitive(select);
 	}
 
-
 	public int[] selectColumn(int threshold) {
 		List<Integer> list = Lists.newArrayList();
 		for (int i = 0; i < numColumns; i++) {
@@ -967,7 +968,6 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		list.toArray(select);
 		return ArrayUtils.toPrimitive(select);
 	}
-
 
 	public SparseMatrix selectRow(int[] row) {
 		// int[] row_ptr = getRowPointers();
@@ -1008,6 +1008,25 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		for (int i = 0; i < fold; i++)
 			SparseMatrix.reshape(ms[i]);
 		return ms;
+	}
+
+	private int[] randSequence(int num, int total) {
+		List<Integer> list = Lists.newArrayList();
+		for (int i = 0; i < total; i++)
+			list.add(i);
+		Collections.shuffle(list);
+		List<Integer> sub = list.subList(0, num);
+		Integer[] array = new Integer[num];
+		sub.toArray(array);
+		return ArrayUtils.toPrimitive(array);
+	}
+
+	public SparseMatrix sample(int row, int col) {
+		int[] row_elem = randSequence(row, numRows);
+		SparseMatrix row_mat = selectRow(row_elem);
+		int[] col_elem = randSequence(col, numColumns);
+		SparseMatrix col_mat = row_mat.selectColumn(col_elem);
+		return col_mat;
 	}
 
 	public SparseMatrix selectColumn(int[] column) {
@@ -1075,6 +1094,12 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		if (lines.size() > 0)
 			FileIO.writeList(filePath, lines, true);
 		Logs.debug("Matrix data is written to: {}", filePath);
+	}
+
+	public static void main(String[] args) {
+		SparseMatrix sp = new SparseMatrix(1, 1);
+		int[] a = sp.randSequence(5, 10);
+		console(Arrays.toString(a));
 	}
 
 }

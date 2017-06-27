@@ -29,14 +29,14 @@ public class UGraph {
 		edges = Maps.newHashMap();
 	}
 
-	public UGraph subgraph(int nodes, int edges, double rate) {
+	public UGraph subgraph(int nodes, int edges) {
 		console(String.format(
-				"sampling graph: %d nodes, %d edges, %.3f burn rate", nodes,
-				edges, rate));
+				"sampling graph: %d nodes, %d edges", nodes,
+				edges));
 		UGraph graph = new UGraph();
 		Map<Integer, Integer> idmap = Maps.newHashMap();
 		while (graph.numVertices() < nodes || graph.numEdges() < edges)
-			forestFire(graph, idmap, nodes, edges, rate);
+			forestFire(graph, idmap, nodes, edges);
 		
 		try {
 			BufferedWriter writer = bufferWriter("idmap");
@@ -53,7 +53,7 @@ public class UGraph {
 	}
 
 	public void forestFire(UGraph graph, Map<Integer, Integer> idmap,
-			int nodes, int edges, double rate) {
+			int nodes, int edges) {
 
 		Distribution rand = new Distribution(System.currentTimeMillis());
 		Queue<Integer> q = Queues.newArrayDeque();
@@ -115,7 +115,7 @@ public class UGraph {
 	public void read(String file) throws FileNotFoundException, IOException {
 		console("reading graph from " + file);
 		BufferedReader reader = bufferReader(file);
-		String line;
+		String line = reader.readLine();
 		while ((line = reader.readLine()) != null) {
 			String[] terms = line.split(" ");
 			if (terms[0].equals("v")) {
@@ -136,7 +136,9 @@ public class UGraph {
 	public void write(String file) throws IOException {
 		console("writing graph to" + file);
 		BufferedWriter writer = bufferWriter(file);
-		String line;
+		String line = "t # 1";
+		writer.write(line);
+		writer.newLine();
 		for (int id : vertices.keySet()) {
 			int label = vertices.get(id).label;
 			line = String.format("v %d %d", id, label);

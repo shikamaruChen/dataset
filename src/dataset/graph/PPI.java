@@ -1,4 +1,4 @@
-package dataset;
+package dataset.graph;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,11 +18,93 @@ import static yifan.utils.IOUtils.*;
 
 public class PPI {
 
-	public String dir = "/home/yifan/dataset/ppi/";
+	private String dir = "/Users/User/Desktop/yifan/dataset/ppi/";
 	private int nedge;
 	private String patFile;
 	private String contFile;
 	private String supFile;
+	private Map<String, Integer> cogMap;
+	private Map<String, Integer> funcMap;
+	private Map<String, Integer> idMap;
+
+	public PPI() {
+		cogMap = Maps.newHashMap();
+		funcMap = Maps.newHashMap();
+		idMap = Maps.newHashMap();
+	}
+
+	private void readFunc(String file) throws IOException {
+		console("read COG vs function");
+		BufferedReader reader = bufferReader(file);
+		String line = reader.readLine();
+		while ((line = reader.readLine()) != null) {
+			String[] terms = line.split("\t");
+			int func = terms[1].charAt(0) - 'A';
+			funcMap.put(terms[0], func);
+		}
+		reader.close();
+	}
+
+	private void readCog(String file) throws IOException {
+		console("read all proteins vs function");
+		BufferedReader reader = bufferReader(file);
+		String line = reader.readLine();
+		while ((line = reader.readLine()) != null) {
+			String[] terms = line.split("\t");
+			if (terms[3].contains("COG") && funcMap.containsKey(terms[3])) {
+				int label = funcMap.get(terms[3]);
+				cogMap.put(terms[0], label);
+			}
+		}
+		reader.close();
+	}
+
+	private void readWriteName(String rFile, BufferedWriter writer) throws IOException {
+		console("read proteins and write the nodes");
+		BufferedReader reader = bufferReader(rFile);
+		String line = reader.readLine();
+		int id = 0;
+		while ((line = reader.readLine()) != null) {
+			String[] terms = line.split(" ");
+			if (cogMap.containsKey(terms[0])) {
+				int label = cogMap.get(terms[0]);
+				idMap.put(terms[0], id);
+				writer.write(String.format("v %d %d", id++, label));
+				writer.newLine();
+			}
+		}
+		reader.close();
+	}
+
+	private void readWriteEdge(String rFile, BufferedWriter writer) throws IOException {
+		console("read proteins and write the edges");
+		BufferedReader reader = bufferReader(rFile);
+		String line = reader.readLine();
+		while ((line = reader.readLine()) != null) {
+			String[] terms = line.split(" ");
+			if (idMap.containsKey(terms[0]) && idMap.containsKey(terms[1])) {
+				double p = Integer.parseInt(terms[2]) * 1.0 / 1000;
+				int id1 = idMap.get(terms[0]);
+				int id2 = idMap.get(terms[1]);
+				writer.write(String.format("e %d %d 1 %f", id1, id2, p));
+				writer.newLine();
+			}
+		}
+		reader.close();
+	}
+
+	public void dataset(String proteinFile, String dataFile) throws IOException {
+		String funcFile = "cognames2003-2014.tab.txt";
+		String cogFile = "COG.mappings.v9.1.txt";
+		readFunc(dir + funcFile);
+		readCog(dir + cogFile);
+		BufferedWriter writer = bufferWriter(dir+dataFile);
+		writer.write("t # 1");
+		writer.newLine();
+		readWriteName(dir + proteinFile, writer);
+		readWriteEdge(dir + proteinFile, writer);
+		writer.close();
+	}
 
 	public void splitResult(String rfile, int n) throws Exception {
 		File rdir = new File(dir + "predict");
@@ -149,7 +231,8 @@ public class PPI {
 		// TODO Auto-generated method stub
 		PPI ppi = new PPI();
 		try {
-			ppi.splitResult("res", 5);
+			ppi.dataset("4952.protein.links.v9.1.txt", "ppi_4952");
+			// ppi.splitResult("res", 5);
 			// ppi.removePro("subgraph");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

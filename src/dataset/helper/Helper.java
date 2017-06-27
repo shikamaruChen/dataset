@@ -19,7 +19,7 @@ import structure.matrix.SparseMatrix;
 import yifan.utils.FileIO;
 import static yifan.utils.IOUtils.*;
 
-public class Dataset {
+public class Helper {
 
 	private SparseMatrix rating;
 	private SparseMatrix feature;
@@ -27,7 +27,7 @@ public class Dataset {
 
 	public static void main(String[] args) {
 		try {
-			Dataset dataset = new Dataset("/home/yifan/dataset/beauty");
+			Helper dataset = new Helper("/home/yifan/dataset/beauty");
 			// dataset.disjointSplit(8, 1);
 			dataset.split(3, 8, 1, true);
 		} catch (Exception e) {
@@ -36,7 +36,7 @@ public class Dataset {
 		}
 	}
 
-	public Dataset(String dir) throws IOException {
+	public Helper(String dir) throws IOException {
 		this.dir = dir;
 		rating = SparseMatrix.readMatrix(dir + "/rating");
 		feature = SparseMatrix.readMatrix(dir + "/feature");
@@ -146,10 +146,15 @@ public class Dataset {
 
 	/**
 	 * train+test+valid = 10
-	 * @param nfold number of folders
-	 * @param train percent of train file
-	 * @param test percent of test file
-	 * @param disjoint whether it is disjointly split
+	 * 
+	 * @param nfold
+	 *            number of folders
+	 * @param train
+	 *            percent of train file
+	 * @param test
+	 *            percent of test file
+	 * @param disjoint
+	 *            whether it is disjointly split
 	 * @throws Exception
 	 */
 	public void split(int nfold, int train, int test, boolean disjoint) throws Exception {

@@ -12,7 +12,7 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import graph.data.UGraph;
+import structure.graph.UGraph;
 import yifan.utils.sscanf.Sscanf;
 
 public class Case {
@@ -132,7 +132,7 @@ public class Case {
 		UGraph graph = new UGraph();
 		graph.read("/Users/User/Desktop/yifan/dataset/dblp/origin");
 		// graph.read("graph");
-		UGraph subgraph = graph.subgraph(1000, 5000, -1);
+		UGraph subgraph = graph.subgraph(1000, 5000);
 		subgraph.write("/Users/User/Desktop/yifan/dataset/dblp/sub");
 	}
 
