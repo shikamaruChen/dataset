@@ -97,8 +97,7 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 	}
 
 	/**
-	 * Define a sparse matrix without data, only use for {@code transpose}
-	 * method
+	 * Define a sparse matrix without data, only use for {@code transpose} method
 	 * 
 	 */
 	public SparseMatrix(int rows, int cols) {
@@ -176,6 +175,12 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 	 */
 	public int[] getRowPointers() {
 		return rowPtr;
+	}
+	/**
+	 * @return the column pointers of CCS structure
+	 */
+	public int[] getColPointers() {
+		return colPtr;
 	}
 
 	/**
@@ -910,8 +915,8 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		}
 
 		/**
-		 * Locates the first non-empty row, starting at the current. After the
-		 * new row has been found, the cursor is also updated
+		 * Locates the first non-empty row, starting at the current. After the new row
+		 * has been found, the cursor is also updated
 		 */
 		private void nextNonEmptyRow() {
 			while (row < numRows && rowPtr[row] == rowPtr[row + 1])
@@ -1072,6 +1077,21 @@ public class SparseMatrix implements Iterable<MatrixEntry>, Serializable {
 		SparseMatrix mat = new SparseMatrix(Nu, Nv, dataTable, colMap);
 		dataTable = null;
 		return mat;
+	}
+
+	public void writeMatrixCSR(String filePath) throws Exception {
+		FileIO.deleteFile(filePath);
+		for (int u = 0; u < numRows; u++) {
+			SparseVector rvec = row(u);
+			String line = "";
+			for (VectorEntry ve : rvec) {
+				int i = ve.index() + 1;
+				double v = ve.get();
+				line += i + " " + v + " ";
+			}
+			line = line.substring(0, line.length() - 1);
+			FileIO.writeString(filePath, line, true);
+		}
 	}
 
 	public void writeMatrix(String filePath) throws Exception {

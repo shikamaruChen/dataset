@@ -50,7 +50,7 @@ public class ItemSet {
 		while (iterator.hasNext()) {
 			String word = iterator.next();
 			int count = (int) globalCounter.getCount(word);
-			if (count < 5) {
+			if (count < 2) {
 				removewords.add(word);
 				iterator.remove();
 			}

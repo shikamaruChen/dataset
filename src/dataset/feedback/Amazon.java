@@ -123,12 +123,8 @@ public class Amazon {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Amazon amazon = new Amazon("/home/yifan/dataset/beauty/origin/");
-		try {
-			amazon.filter(8, 5, 30);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Amazon amazon = new Amazon("/Users/chenyifan/jianguo/dataset/kindle/raw/");
+		amazon.feature("output.strict");
+		amazon.rating("ratings_Kindle_Store.csv");
 	}
 }

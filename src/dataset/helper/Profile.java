@@ -46,8 +46,10 @@ public class Profile {
 			for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
 				String word = token.get(TextAnnotation.class);
 				String pos = token.get(PartOfSpeechAnnotation.class);
-				if (pos.startsWith("N") && word.length() > 1
+//				System.out.println(pos);
+				if ((pos.startsWith("V")) && word.length() > 1
 						&& !pattern.matcher(word).matches())
+//				if (word.length() > 1 && !pattern.matcher(word).matches())
 					localCounter.incrementCount(word);
 			}
 	}

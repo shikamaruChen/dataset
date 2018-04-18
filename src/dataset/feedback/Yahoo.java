@@ -20,7 +20,7 @@ import dataset.helper.ItemSet;
 
 public class Yahoo {
 
-	private static final String dir = "E:/dataset/yahoo/";
+	private static final String dir = "/Users/chenyifan/jianguo/dataset/yahoo/";
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub

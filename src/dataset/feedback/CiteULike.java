@@ -30,17 +30,6 @@ public class CiteULike {
 		items = Maps.newTreeMap();
 	}
 
-	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
-		CiteULike cul = new CiteULike();
-		// cul.crawler("http://www.citeulike.org/user/irenas/article/42");
-		// cul.rating();
-		cul.crawler(110993,3330);
-		//cul.rating();
-		// rating();
-
-	}
-
 	private boolean crawler(String url) throws IOException {
 		Document doc = Jsoup.connect(url).timeout(500000).ignoreHttpErrors(true).get();
 		Element title = doc.getElementById("article_title");
@@ -152,4 +141,15 @@ public class CiteULike {
 		writer.close();
 	}
 
+	public static void main(String[] args) throws IOException {
+		// TODO Auto-generated method stub
+		CiteULike cul = new CiteULike();
+		// cul.crawler("http://www.citeulike.org/user/irenas/article/42");
+		// cul.rating();
+		cul.crawler(0,10000);
+		//cul.rating();
+		// rating();
+
+	}
+	
 }
